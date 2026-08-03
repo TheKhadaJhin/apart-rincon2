@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap');
+
 :root {
   --bg: #050505;
   --bg-soft: #0d0d0d;
@@ -1540,5 +1542,453 @@ textarea::placeholder {
 @media (max-width: 1080px) {
   .nav {
     background: rgba(248, 247, 243, 0.98);
+  }
+}
+
+
+/* =========================================================
+   Ajustes finales ApartRincón
+   - Fuente Cinzel Decorative en todo el sitio
+   - Hero nuevo sin recuadros alrededor del logo
+   - Compatibilidad con App.jsx hero-brand-panel
+   - Mejoras visuales para gestión de reservas del admin
+   ========================================================= */
+
+:root {
+  font-family: 'Cinzel Decorative', serif !important;
+}
+
+body,
+button,
+input,
+textarea,
+select,
+a,
+p,
+span,
+small,
+strong,
+label,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.eyebrow,
+.button,
+.brand,
+.nav a {
+  font-family: 'Cinzel Decorative', serif !important;
+}
+
+body {
+  font-weight: 400;
+}
+
+p,
+.hero-text,
+.page-hero p,
+.section-heading p,
+.text-block p,
+.location-copy p,
+.contact-section p,
+.admin-help,
+.comfort-card p,
+.property-card p,
+.review-card p,
+.admin-row span,
+.admin-row small,
+.calendar-day small {
+  letter-spacing: 0.01em;
+}
+
+/* Header / marca */
+.brand img,
+.footer img,
+.admin-login-card img,
+.admin-sidebar img {
+  object-fit: contain;
+  background: transparent;
+}
+
+.brand img {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  border: none;
+  padding: 0;
+}
+
+.brand span {
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+/* Títulos principales con la nueva fuente */
+.hero-content h1,
+.page-hero h1 {
+  font-family: 'Cinzel Decorative', serif !important;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  line-height: 1.03;
+}
+
+.section-heading h2,
+.section h2,
+.admin-header h2,
+.admin-login-card h1 {
+  font-family: 'Cinzel Decorative', serif !important;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+/* Hero anterior: anulamos tarjeta, bordes y recuadros por compatibilidad */
+.hero-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: visible !important;
+}
+
+.hero-card::before,
+.hero-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.hero-card img {
+  width: min(92%, 430px);
+  max-height: 340px;
+  object-fit: contain;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+/* Hero nuevo usado por App.jsx */
+.hero-brand-panel {
+  position: relative;
+  min-height: 440px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1.15rem;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.hero-brand-panel::before {
+  content: '';
+  position: absolute;
+  width: min(82%, 480px);
+  height: min(82%, 480px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(212, 175, 55, 0.18), transparent 62%),
+    radial-gradient(circle, rgba(117, 154, 167, 0.13), transparent 72%);
+  filter: blur(12px);
+  z-index: 0;
+}
+
+.hero-brand-glow {
+  position: absolute;
+  width: min(76%, 430px);
+  height: min(76%, 430px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(248, 247, 243, 0.9) 0%, rgba(248, 247, 243, 0.45) 44%, transparent 72%);
+  border: none;
+  box-shadow: none;
+  z-index: 0;
+}
+
+.hero-brand-logo-clean {
+  position: relative;
+  z-index: 1;
+  width: min(94%, 440px);
+  max-height: 330px;
+  object-fit: contain;
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.hero-brand-info {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.hero-brand-info p {
+  margin: 0;
+  color: #063e4b;
+  font-size: clamp(1.45rem, 3vw, 2.25rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.hero-brand-info span {
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: #d4af37;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* La pill del WhatsApp en el hero ya no queda absoluta ni dentro de una caja */
+.hero-whatsapp-pill,
+.hero-brand-panel .availability-pill {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin-top: 0.35rem;
+  width: auto;
+  min-width: min(100%, 350px);
+  z-index: 2;
+  color: #063e4b;
+  background: rgba(248, 247, 243, 0.86);
+  border: 1px solid rgba(212, 175, 55, 0.42);
+  box-shadow: 0 12px 34px rgba(6, 62, 75, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+/* Admin de reservas */
+.admin-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.booking-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.filter-button {
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(248, 247, 243, 0.65);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 0.76rem;
+  transition: 180ms ease;
+}
+
+.filter-button:hover,
+.filter-button.active {
+  border-color: rgba(212, 175, 55, 0.55);
+  background: rgba(212, 175, 55, 0.18);
+  color: #063e4b;
+}
+
+.button.compact {
+  min-height: 36px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+.booking-row {
+  align-items: flex-start;
+  border-left: 5px solid var(--line);
+}
+
+.booking-row.booking-reserved {
+  border-left-color: #d4af37;
+}
+
+.booking-row.booking-pending {
+  border-left-color: #759aa7;
+}
+
+.booking-row.booking-blocked {
+  border-left-color: #b94a48;
+}
+
+.booking-row.booking-completed {
+  border-left-color: #6d9f71;
+  opacity: 0.9;
+}
+
+.booking-row.booking-cancelled {
+  border-left-color: #8d8d8d;
+  opacity: 0.72;
+}
+
+.booking-summary {
+  min-width: 230px;
+}
+
+.booking-title-line {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: inline-flex !important;
+  align-items: center;
+  width: fit-content;
+  margin-top: 0 !important;
+  padding: 0.34rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--line);
+  color: #063e4b !important;
+  background: rgba(248, 247, 243, 0.75);
+}
+
+.status-badge.reserved {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: rgba(212, 175, 55, 0.56);
+}
+
+.status-badge.pending {
+  background: rgba(117, 154, 167, 0.18);
+  border-color: rgba(117, 154, 167, 0.48);
+}
+
+.status-badge.blocked {
+  background: rgba(185, 74, 72, 0.12);
+  border-color: rgba(185, 74, 72, 0.42);
+}
+
+.status-badge.completed {
+  background: rgba(109, 159, 113, 0.16);
+  border-color: rgba(109, 159, 113, 0.42);
+}
+
+.status-badge.cancelled {
+  background: rgba(80, 80, 80, 0.1);
+  border-color: rgba(80, 80, 80, 0.26);
+}
+
+.booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.booking-edit-form {
+  display: grid;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.booking-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.booking-edit-grid label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.booking-edit-grid .wide {
+  grid-column: 1 / -1;
+}
+
+/* Nuevos estados del calendario */
+.legend.completed,
+.calendar-day.completed {
+  background: rgba(109, 159, 113, 0.16);
+  border-color: rgba(109, 159, 113, 0.42);
+}
+
+.legend.cancelled,
+.calendar-day.cancelled {
+  background: rgba(80, 80, 80, 0.1);
+  border-color: rgba(80, 80, 80, 0.26);
+}
+
+.calendar-day.completed small,
+.calendar-day.cancelled small {
+  color: var(--white);
+}
+
+/* Ajustes responsive para hero y admin */
+@media (max-width: 1080px) {
+  .hero-brand-panel {
+    min-height: 360px;
+  }
+
+  .booking-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-section-header {
+    flex-direction: column;
+  }
+
+  .booking-filter-bar {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-brand-panel {
+    min-height: 300px;
+    padding: 1rem 0;
+  }
+
+  .hero-brand-logo-clean {
+    width: min(96%, 340px);
+    max-height: 260px;
+  }
+
+  .hero-brand-info p {
+    font-size: clamp(1.1rem, 7vw, 1.6rem);
+  }
+
+  .hero-brand-info span {
+    font-size: 0.72rem;
+  }
+
+  .booking-row,
+  .admin-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .booking-actions {
+    justify-content: flex-start;
+  }
+
+  .booking-edit-grid {
+    grid-template-columns: 1fr;
   }
 }

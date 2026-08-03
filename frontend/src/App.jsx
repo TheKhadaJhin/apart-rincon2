@@ -320,10 +320,7 @@ function HomePage() {
 
             <img className="hero-brand-logo-clean" src="/images/logo.png" alt="ApartRincón" />
 
-            <div className="hero-brand-info">
-              <p>APART RINCÓN</p>
-              <span>Alta Gracia · Córdoba</span>
-            </div>
+            
 
             <a
               className="availability-pill hero-whatsapp-pill"
