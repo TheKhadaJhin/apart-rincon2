@@ -130,6 +130,20 @@ function buildWhatsappUrl(propertyName = '') {
   return `https://wa.me/${cleanNumber}?text=${text}`
 }
 
+function buildGuestWhatsappUrl(phone, propertyName = '') {
+  const cleanNumber = String(phone || '').replace(/\D/g, '')
+
+  if (!cleanNumber) return ''
+
+  const text = encodeURIComponent(
+    propertyName
+      ? `Hola, te escribo desde ApartRincón por tu reserva/consulta de ${propertyName}.`
+      : 'Hola, te escribo desde ApartRincón por tu reserva/consulta.'
+  )
+
+  return `https://wa.me/${cleanNumber}?text=${text}`
+}
+
 function resolveImageUrl(value) {
   if (!value) return ''
   if (value.startsWith('http')) return value
@@ -143,13 +157,31 @@ function formatDate(value) {
   return `${day}/${month}/${year}`
 }
 
+const bookingStatusOptions = [
+  { value: 'pending', label: 'Pendiente' },
+  { value: 'reserved', label: 'Reservado' },
+  { value: 'blocked', label: 'Bloqueado' },
+  { value: 'completed', label: 'Completada' },
+  { value: 'cancelled', label: 'Cancelada' }
+]
+
+const bookingFilters = [
+  { value: 'active', label: 'Activas' },
+  { value: 'all', label: 'Todas' },
+  { value: 'pending', label: 'Pendientes' },
+  { value: 'reserved', label: 'Reservadas' },
+  { value: 'blocked', label: 'Bloqueadas' },
+  { value: 'completed', label: 'Completadas' },
+  { value: 'cancelled', label: 'Canceladas' }
+]
+
 function statusLabel(status) {
-  const labels = {
-    reserved: 'Reservado',
-    blocked: 'Bloqueado',
-    pending: 'Pendiente'
-  }
-  return labels[status] || status
+  const found = bookingStatusOptions.find((item) => item.value === status)
+  return found?.label || status
+}
+
+function isBookingActive(status) {
+  return !['completed', 'cancelled'].includes(status)
 }
 
 function Shell({ children }) {
@@ -762,6 +794,8 @@ function AdminApp() {
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const [selectedCalendarProperty, setSelectedCalendarProperty] = useState('')
+  const [editingBooking, setEditingBooking] = useState(null)
+  const [bookingFilter, setBookingFilter] = useState('active')
 
   const [bookingForm, setBookingForm] = useState({
     property_id: '',
@@ -913,7 +947,7 @@ function AdminApp() {
         notes: ''
       })
       await loadAdminData()
-      setMessage('Reserva o bloqueo creado.')
+      setMessage('Reserva, consulta o bloqueo creado.')
     } catch (error) {
       setMessage(error.message)
     } finally {
@@ -921,8 +955,74 @@ function AdminApp() {
     }
   }
 
+  async function updateBooking(id, payload, successMessage = 'Reserva actualizada.') {
+    setSaving(true)
+    setMessage('')
+
+    try {
+      const updated = await adminFetch(`/api/admin/bookings/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload)
+      })
+
+      setBookings((current) => current.map((item) => (item.id === id ? updated : item)))
+      setMessage(successMessage)
+      return updated
+    } catch (error) {
+      setMessage(error.message)
+      return null
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function startEditingBooking(booking) {
+    setEditingBooking({ ...booking })
+  }
+
+  function cancelEditingBooking() {
+    setEditingBooking(null)
+  }
+
+  async function submitBookingEdit(event) {
+    event.preventDefault()
+
+    if (!editingBooking) return
+
+    const updated = await updateBooking(
+      editingBooking.id,
+      {
+        property_id: editingBooking.property_id,
+        guest_name: editingBooking.guest_name || '',
+        phone: editingBooking.phone || '',
+        start_date: editingBooking.start_date,
+        end_date: editingBooking.end_date,
+        status: editingBooking.status,
+        notes: editingBooking.notes || ''
+      },
+      'Reserva actualizada.'
+    )
+
+    if (updated) {
+      setEditingBooking(null)
+      await loadAdminData()
+    }
+  }
+
+  async function updateBookingStatus(booking, status) {
+    const updated = await updateBooking(
+      booking.id,
+      { status },
+      `Reserva marcada como ${statusLabel(status).toLowerCase()}.`
+    )
+
+    if (updated) {
+      await loadAdminData()
+    }
+  }
+
   async function deleteBooking(id) {
-    if (!confirm('¿Eliminar esta reserva/bloqueo?')) return
+    if (!confirm('¿Eliminar definitivamente esta reserva/bloqueo? Esta acción debería usarse solo si fue cargada por error.')) return
     setSaving(true)
 
     try {
@@ -941,7 +1041,14 @@ function AdminApp() {
     setToken('')
     setProperties([])
     setBookings([])
+    setEditingBooking(null)
   }
+
+  const filteredBookings = bookings.filter((booking) => {
+    if (bookingFilter === 'all') return true
+    if (bookingFilter === 'active') return isBookingActive(booking.status)
+    return booking.status === bookingFilter
+  })
 
   if (!token) {
     return (
@@ -1024,7 +1131,7 @@ function AdminApp() {
         </section>
 
         <section className="admin-section">
-          <h3>Crear reserva o bloqueo</h3>
+          <h3>Crear reserva, consulta o bloqueo</h3>
           <form className="booking-form" onSubmit={createBooking}>
             <label>
               Propiedad
@@ -1085,9 +1192,13 @@ function AdminApp() {
                 value={bookingForm.status}
                 onChange={(event) => setBookingForm({ ...bookingForm, status: event.target.value })}
               >
-                <option value="reserved">Reservado</option>
-                <option value="blocked">Bloqueado</option>
-                <option value="pending">Pendiente</option>
+                {bookingStatusOptions
+                  .filter((item) => ['pending', 'reserved', 'blocked'].includes(item.value))
+                  .map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
               </select>
             </label>
 
@@ -1108,30 +1219,59 @@ function AdminApp() {
         </section>
 
         <section className="admin-section">
-          <h3>Reservas cargadas</h3>
+          <div className="admin-section-header">
+            <div>
+              <h3>Reservas cargadas</h3>
+              <p className="admin-help">
+                Actualiza el estado sin borrar historial. Usa eliminar solo cuando una reserva fue cargada por error.
+              </p>
+            </div>
+
+            <div className="booking-filter-bar" aria-label="Filtrar reservas">
+              {bookingFilters.map((filter) => (
+                <button
+                  key={filter.value}
+                  className={bookingFilter === filter.value ? 'filter-button active' : 'filter-button'}
+                  type="button"
+                  onClick={() => setBookingFilter(filter.value)}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="admin-table">
             {bookings.length === 0 ? (
               <p>No hay reservas cargadas.</p>
+            ) : filteredBookings.length === 0 ? (
+              <p>No hay reservas para este filtro.</p>
             ) : (
-              bookings.map((booking) => {
+              filteredBookings.map((booking) => {
                 const property = properties.find((item) => item.id === booking.property_id)
 
+                if (editingBooking?.id === booking.id) {
+                  return (
+                    <BookingEditForm
+                      key={booking.id}
+                      booking={editingBooking}
+                      properties={properties}
+                      onChange={setEditingBooking}
+                      onCancel={cancelEditingBooking}
+                      onSubmit={submitBookingEdit}
+                    />
+                  )
+                }
+
                 return (
-                  <div className="admin-row" key={booking.id}>
-                    <div>
-                      <strong>{property?.name || booking.property_id}</strong>
-                      <span>
-                        {formatDate(booking.start_date)} al {formatDate(booking.end_date)} · {statusLabel(booking.status)}
-                      </span>
-                      <small>
-                        {booking.guest_name || 'Sin cliente'} {booking.phone ? `· ${booking.phone}` : ''}
-                      </small>
-                      {booking.notes && <small>{booking.notes}</small>}
-                    </div>
-                    <button className="icon-button danger" onClick={() => deleteBooking(booking.id)} title="Eliminar">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                  <BookingRow
+                    key={booking.id}
+                    booking={booking}
+                    property={property}
+                    onEdit={startEditingBooking}
+                    onDelete={deleteBooking}
+                    onStatusChange={updateBookingStatus}
+                  />
                 )
               })
             )}
@@ -1159,9 +1299,169 @@ function AdminApp() {
   )
 }
 
+
+function BookingRow({ booking, property, onEdit, onDelete, onStatusChange }) {
+  const guestWhatsapp = buildGuestWhatsappUrl(booking.phone, property?.name)
+
+  return (
+    <div className={`admin-row booking-row booking-${booking.status}`}>
+      <div className="booking-summary">
+        <div className="booking-title-line">
+          <strong>{property?.name || booking.property_id}</strong>
+          <span className={`status-badge ${booking.status}`}>{statusLabel(booking.status)}</span>
+        </div>
+
+        <span>
+          {formatDate(booking.start_date)} al {formatDate(booking.end_date)}
+        </span>
+
+        <small>
+          {booking.guest_name || 'Sin cliente'} {booking.phone ? `· ${booking.phone}` : ''}
+        </small>
+
+        {booking.notes && <small>{booking.notes}</small>}
+      </div>
+
+      <div className="booking-actions">
+        <button className="button ghost compact" type="button" onClick={() => onEdit(booking)}>
+          <Edit3 size={16} />
+          Editar
+        </button>
+
+        {booking.status !== 'reserved' && (
+          <button className="button secondary compact" type="button" onClick={() => onStatusChange(booking, 'reserved')}>
+            Reservar
+          </button>
+        )}
+
+        {booking.status !== 'pending' && (
+          <button className="button ghost compact" type="button" onClick={() => onStatusChange(booking, 'pending')}>
+            Pendiente
+          </button>
+        )}
+
+        {booking.status !== 'completed' && (
+          <button className="button ghost compact" type="button" onClick={() => onStatusChange(booking, 'completed')}>
+            Completada
+          </button>
+        )}
+
+        {booking.status !== 'cancelled' && (
+          <button className="button ghost compact" type="button" onClick={() => onStatusChange(booking, 'cancelled')}>
+            Cancelada
+          </button>
+        )}
+
+        {guestWhatsapp && (
+          <a className="button secondary compact" href={guestWhatsapp} target="_blank" rel="noreferrer">
+            <MessageCircle size={16} />
+            WhatsApp
+          </a>
+        )}
+
+        <button className="icon-button danger" type="button" onClick={() => onDelete(booking.id)} title="Eliminar definitivamente">
+          <Trash2 size={18} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function BookingEditForm({ booking, properties, onChange, onCancel, onSubmit }) {
+  return (
+    <form className="admin-row booking-edit-form" onSubmit={onSubmit}>
+      <div className="booking-edit-grid">
+        <label>
+          Propiedad
+          <select
+            value={booking.property_id}
+            onChange={(event) => onChange({ ...booking, property_id: event.target.value })}
+            required
+          >
+            {properties.map((property) => (
+              <option key={property.id} value={property.id}>
+                {property.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Cliente
+          <input
+            value={booking.guest_name || ''}
+            onChange={(event) => onChange({ ...booking, guest_name: event.target.value })}
+            placeholder="Nombre del huésped"
+          />
+        </label>
+
+        <label>
+          Teléfono
+          <input
+            value={booking.phone || ''}
+            onChange={(event) => onChange({ ...booking, phone: event.target.value })}
+            placeholder="+54..."
+          />
+        </label>
+
+        <label>
+          Entrada
+          <input
+            type="date"
+            value={booking.start_date || ''}
+            onChange={(event) => onChange({ ...booking, start_date: event.target.value })}
+            required
+          />
+        </label>
+
+        <label>
+          Salida
+          <input
+            type="date"
+            value={booking.end_date || ''}
+            onChange={(event) => onChange({ ...booking, end_date: event.target.value })}
+            required
+          />
+        </label>
+
+        <label>
+          Estado
+          <select value={booking.status} onChange={(event) => onChange({ ...booking, status: event.target.value })}>
+            {bookingStatusOptions.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="wide">
+          Notas internas
+          <input
+            value={booking.notes || ''}
+            onChange={(event) => onChange({ ...booking, notes: event.target.value })}
+            placeholder="Ej: señó 50%, llega por la tarde, consulta por mascota..."
+          />
+        </label>
+      </div>
+
+      <div className="booking-actions">
+        <button className="button primary compact" type="submit">
+          <CheckCircle2 size={16} />
+          Guardar cambios
+        </button>
+        <button className="button ghost compact" type="button" onClick={onCancel}>
+          <X size={16} />
+          Cancelar
+        </button>
+      </div>
+    </form>
+  )
+}
+
 function AdminCalendar({ properties, bookings, selectedProperty, onSelectedProperty }) {
   const [month, setMonth] = useState(() => new Date())
-  const selectedBookings = bookings.filter((booking) => booking.property_id === selectedProperty)
+  const selectedBookings = bookings.filter((booking) => booking.property_id === selectedProperty && booking.status !== 'cancelled')
   const calendarDays = buildCalendarDays(month)
   const monthLabel = month.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
 
@@ -1198,6 +1498,7 @@ function AdminCalendar({ properties, bookings, selectedProperty, onSelectedPrope
         <span className="legend reserved">Reservado</span>
         <span className="legend blocked">Bloqueado</span>
         <span className="legend pending">Pendiente</span>
+        <span className="legend completed">Completada</span>
         <span className="legend free">Libre</span>
       </div>
 
