@@ -315,12 +315,25 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="hero-card">
-            <img src="/images/logo.png" alt="ApartRincón" />
-            <div className="availability-pill">
+          <div className="hero-brand-panel" aria-label="Presentación de marca ApartRincón">
+            <div className="hero-brand-glow" />
+
+            <img className="hero-brand-logo-clean" src="/images/logo.png" alt="ApartRincón" />
+
+            <div className="hero-brand-info">
+              <p>APART RINCÓN</p>
+              <span>Alta Gracia · Córdoba</span>
+            </div>
+
+            <a
+              className="availability-pill hero-whatsapp-pill"
+              href={buildWhatsappUrl()}
+              target={buildWhatsappUrl().startsWith('http') ? '_blank' : undefined}
+              rel="noreferrer"
+            >
               <MessageCircle size={18} />
               Consulta personalizada por WhatsApp
-            </div>
+            </a>
           </div>
         </section>
 
