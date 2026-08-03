@@ -320,7 +320,10 @@ function HomePage() {
 
             <img className="hero-brand-logo-clean" src="/images/logo.png" alt="ApartRincón" />
 
-            
+            <div className="hero-brand-info">
+              <p>APART RINCÓN</p>
+              <span>Alta Gracia · Córdoba</span>
+            </div>
 
             <a
               className="availability-pill hero-whatsapp-pill"
@@ -367,7 +370,7 @@ function AboutPage() {
         <PageHero
           eyebrow="Quiénes somos"
           title="ApartRincón: estadías temporarias con atención directa."
-          text="Una página independiente para presentar la marca, su forma de atención y el tipo de experiencia que busca entregar a cada huésped."
+          text="Conocé la propuesta de alojamiento temporario de ApartRincón en Alta Gracia, Córdoba."
         />
 
         <section className="section split">
@@ -404,13 +407,13 @@ function WhyChooseUsPage() {
         <PageHero
           eyebrow="Por qué elegirnos"
           title="Comodidad, ubicación tranquila y trato personalizado."
-          text="Esta sección está preparada para reforzar argumentos comerciales antes de que el visitante consulte por WhatsApp."
+          text="Elegí una estadía cómoda, tranquila y con comunicación directa para coordinar cada detalle."
         />
 
         <section className="section comfort-section">
           <div className="comfort-grid">
             <InfoCard title="Calificación 5.0" text="ApartRincón cuenta con una base de reseñas positiva en Google, útil para generar confianza inmediata." />
-            <InfoCard title="Comunicación directa" text="El cliente no reserva automáticamente: consulta, conversa detalles y recibe información personalizada." />
+            <InfoCard title="Comunicación directa" text="Coordinás disponibilidad, fechas y detalles por WhatsApp con atención personalizada." />
             <InfoCard title="Espacios equipados" text="Las propiedades se presentan con servicios, capacidad, fotos y descripción clara." />
             <InfoCard title="Zona tranquila" text="Ubicación en km22 Valle Mitimay, Ruta 5, cerca de Alta Gracia, Córdoba." />
           </div>
@@ -430,7 +433,7 @@ function ServicesPage() {
         <PageHero
           eyebrow="Servicios"
           title="Servicios pensados para estadías temporarias."
-          text="La sección puede ajustarse luego con los servicios exactos de cada propiedad."
+          text="Conocé las comodidades y prestaciones principales disponibles para tu estadía."
         />
 
         <section className="section comfort-section">
@@ -447,8 +450,8 @@ function ServicesPage() {
 
         <section className="section service-list-section">
           <div className="section-heading align-left">
-            <p className="eyebrow">Base editable</p>
-            <h2>Servicios a confirmar con fotos y datos reales.</h2>
+            <p className="eyebrow">Comodidades</p>
+            <h2>Todo lo necesario para una estadía cómoda.</h2>
           </div>
           <div className="service-list">
             <span>WiFi</span>
@@ -497,7 +500,7 @@ function GalleryPage() {
         <PageHero
           eyebrow="Galería"
           title="Fotos de las propiedades."
-          text="Las fotos se cargan desde el panel admin. Cada propiedad puede tener múltiples imágenes para que el visitante las revise libremente."
+          text="Explorá imágenes de los departamentos y conocé mejor los espacios antes de consultar tu estadía."
         />
 
         <section className="section gallery-section">
@@ -509,8 +512,8 @@ function GalleryPage() {
           ) : images.length === 0 ? (
             <div className="empty-gallery">
               <Camera size={46} />
-              <h2>Galería preparada</h2>
-              <p>Cuando cargues fotos desde el panel admin, aparecerán automáticamente en esta página.</p>
+              <h2>Fotos próximamente</h2>
+              <p>Pronto vas a encontrar imágenes de los departamentos para conocer mejor cada espacio.</p>
             </div>
           ) : (
             <div className="gallery-grid">
@@ -536,7 +539,7 @@ function ContactPage() {
         <PageHero
           eyebrow="Contacto"
           title="Consultá disponibilidad por WhatsApp."
-          text="El flujo recomendado es mantener la conversación directa: fechas, precio, cantidad de huéspedes y detalles se coordinan antes de registrar la reserva."
+          text="Consultá fechas, tarifas, cantidad de huéspedes y detalles de la estadía por WhatsApp."
         >
           <a
             className="button primary large"
@@ -698,7 +701,7 @@ function ReviewsCarousel() {
           Ver reseñas en Google
         </a>
       ) : (
-        <p className="placeholder-note">Pendiente: agregar link real de reseñas de Google en el archivo .env.</p>
+        <p className="placeholder-note">El enlace directo a reseñas de Google estará disponible próximamente.</p>
       )}
     </section>
   )
@@ -711,8 +714,8 @@ function LocationSection() {
         <p className="eyebrow">Ubicación</p>
         <h2>Ubicación en Alta Gracia, Córdoba.</h2>
         <p>
-          ApartRincón se encuentra en km22 Valle Mitimay, Ruta 5, X5186 Alta Gracia, Córdoba. Desde esta sección los huéspedes
-          pueden ubicarse y calcular su recorrido.
+          ApartRincón se encuentra en km22 Valle Mitimay, Ruta 5, X5186 Alta Gracia, Córdoba. Los huéspedes
+          pueden consultar la ubicación y organizar su llegada con facilidad.
         </p>
         <div className="location-items">
           <span>
@@ -743,7 +746,7 @@ function LocationSection() {
           <div className="map-placeholder">
             <MapPin size={42} />
             <strong>Mapa pendiente</strong>
-            <span>Configura VITE_GOOGLE_MAPS_EMBED_URL en frontend/.env</span>
+            <span>El mapa estará disponible próximamente.</span>
           </div>
         )}
       </div>
