@@ -23,10 +23,13 @@ DATABASE_PATH = os.getenv("DATABASE_PATH", "./apartrincon.db")
 UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "./static/uploads"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
+BOOKING_STATUSES = {"reserved", "blocked", "pending", "completed", "cancelled"}
+CONFLICTING_BOOKING_STATUSES = {"reserved", "blocked"}
+
 app = FastAPI(
     title="ApartRincón API",
     description="API base para propiedades, galería y agenda privada de ApartRincón.",
-    version="0.3.0",
+    version="0.3.1",
 )
 
 app.add_middleware(
@@ -87,9 +90,8 @@ class BookingBase(BaseModel):
     @field_validator("status")
     @classmethod
     def validate_status(cls, value: str) -> str:
-        allowed = {"reserved", "blocked", "pending"}
-        if value not in allowed:
-            raise ValueError(f"Estado inválido. Usa uno de: {', '.join(sorted(allowed))}")
+        if value not in BOOKING_STATUSES:
+            raise ValueError(f"Estado inválido. Usa uno de: {', '.join(sorted(BOOKING_STATUSES))}")
         return value
 
 
@@ -105,6 +107,26 @@ class BookingUpdate(BaseModel):
     guest_name: Optional[str] = None
     phone: Optional[str] = None
     notes: Optional[str] = None
+
+    @field_validator("start_date", "end_date")
+    @classmethod
+    def validate_optional_date(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+        except ValueError as exc:
+            raise ValueError("La fecha debe usar formato YYYY-MM-DD") from exc
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_optional_status(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return value
+        if value not in BOOKING_STATUSES:
+            raise ValueError(f"Estado inválido. Usa uno de: {', '.join(sorted(BOOKING_STATUSES))}")
+        return value
 
 
 
@@ -230,6 +252,11 @@ def init_db() -> None:
 @app.on_event("startup")
 def startup() -> None:
     init_db()
+
+
+@app.get("/")
+def root() -> dict[str, str]:
+    return {"status": "ok", "docs": "/docs", "properties": "/api/properties"}
 
 
 @app.get("/api/health")
@@ -390,7 +417,7 @@ def create_booking(payload: BookingCreate) -> dict[str, Any]:
         if not property_exists:
             raise HTTPException(status_code=404, detail="Propiedad no encontrada")
 
-        if payload.status in {"reserved", "blocked"} and has_booking_conflict(
+        if payload.status in CONFLICTING_BOOKING_STATUSES and has_booking_conflict(
             db,
             payload.property_id,
             payload.start_date,
@@ -438,7 +465,7 @@ def update_booking(booking_id: str, payload: BookingUpdate) -> dict[str, Any]:
 
         validate_booking_dates(data["start_date"], data["end_date"])
 
-        if data["status"] in {"reserved", "blocked"} and has_booking_conflict(
+        if data["status"] in CONFLICTING_BOOKING_STATUSES and has_booking_conflict(
             db,
             data["property_id"],
             data["start_date"],
