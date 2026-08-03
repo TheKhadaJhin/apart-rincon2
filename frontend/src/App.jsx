@@ -183,9 +183,7 @@ function Shell({ children }) {
               {label}
             </a>
           ))}
-          <a className="nav-admin" href="/admin">
-            Admin
-          </a>
+          
         </nav>
       </header>
 
