@@ -1,0 +1,24 @@
+# dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# env
+.env
+.env.local
+.env.production
+
+# build
+dist/
+build/
+
+# database
+*.db
+*.sqlite
+*.sqlite3
+
+# system
+.DS_Store
+Thumbs.db
