@@ -2004,3 +2004,91 @@ p,
 .admin-section .admin-image-grid {
   margin-top: 1rem;
 }
+
+/* =========================================================
+   Slider de fotos por propiedad
+   - Las fotos internas quedan dentro de cada departamento.
+   - La galería general queda separada para exteriores/alrededores.
+   ========================================================= */
+
+.property-slider {
+  position: relative;
+  overflow: hidden;
+}
+
+.property-slider img {
+  transition: transform 260ms ease, filter 260ms ease;
+}
+
+.property-slider:hover img {
+  transform: scale(1.025);
+}
+
+.property-slider-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(248, 247, 243, 0.68);
+  border-radius: 999px;
+  color: #f8f7f3;
+  background: rgba(6, 62, 75, 0.62);
+  box-shadow: 0 10px 24px rgba(6, 62, 75, 0.22);
+  backdrop-filter: blur(10px);
+  transform: translateY(-50%);
+}
+
+.property-slider-arrow:hover {
+  background: rgba(6, 62, 75, 0.82);
+}
+
+.property-slider-arrow.previous {
+  left: 0.9rem;
+}
+
+.property-slider-arrow.next {
+  right: 0.9rem;
+}
+
+.property-slider-counter {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgba(248, 247, 243, 0.68);
+  border-radius: 999px;
+  color: #f8f7f3;
+  background: rgba(6, 62, 75, 0.62);
+  box-shadow: 0 10px 24px rgba(6, 62, 75, 0.16);
+  backdrop-filter: blur(10px);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.property-actions .button.primary {
+  width: fit-content;
+}
+
+@media (max-width: 720px) {
+  .property-slider-arrow {
+    width: 38px;
+    height: 38px;
+  }
+
+  .property-slider-arrow.previous {
+    left: 0.65rem;
+  }
+
+  .property-slider-arrow.next {
+    right: 0.65rem;
+  }
+
+  .property-slider-counter {
+    right: 0.75rem;
+    bottom: 0.75rem;
+  }
+}

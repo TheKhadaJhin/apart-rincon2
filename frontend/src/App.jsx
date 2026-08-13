@@ -608,12 +608,63 @@ function FeaturedProperties({ properties, loading, full = false }) {
 }
 
 function PropertyCard({ property, index }) {
-  const image = property.images?.[0]
+  const images = normalizeList(property.images)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const currentImage = images[currentImageIndex]
+  const hasMultipleImages = images.length > 1
+
+  function showPreviousImage() {
+    if (!hasMultipleImages) return
+    setCurrentImageIndex((current) => (current - 1 + images.length) % images.length)
+  }
+
+  function showNextImage() {
+    if (!hasMultipleImages) return
+    setCurrentImageIndex((current) => (current + 1) % images.length)
+  }
+
+  useEffect(() => {
+    if (currentImageIndex > images.length - 1) {
+      setCurrentImageIndex(0)
+    }
+  }, [currentImageIndex, images.length])
 
   return (
     <article className="property-card">
-      <div className={`property-media media-${index}`}>
-        {image ? <img src={resolveImageUrl(image)} alt={property.name} /> : <span>Foto de la propiedad</span>}
+      <div className={`property-media property-slider media-${index}`}>
+        {currentImage ? (
+          <>
+            <img src={resolveImageUrl(currentImage)} alt={`${property.name} foto ${currentImageIndex + 1}`} />
+
+            {hasMultipleImages && (
+              <>
+                <button
+                  className="property-slider-arrow previous"
+                  type="button"
+                  onClick={showPreviousImage}
+                  aria-label={`Ver foto anterior de ${property.name}`}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+
+                <button
+                  className="property-slider-arrow next"
+                  type="button"
+                  onClick={showNextImage}
+                  aria-label={`Ver foto siguiente de ${property.name}`}
+                >
+                  <ChevronRight size={20} />
+                </button>
+
+                <div className="property-slider-counter">
+                  {currentImageIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <span>Foto de la propiedad</span>
+        )}
       </div>
 
       <div className="property-content">
@@ -645,9 +696,6 @@ function PropertyCard({ property, index }) {
           >
             <MessageCircle size={18} />
             Consultar por WhatsApp
-          </a>
-          <a className="button ghost" href="/galeria">
-            Ver fotos
           </a>
         </div>
       </div>
