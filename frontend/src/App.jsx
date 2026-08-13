@@ -259,6 +259,31 @@ function useProperties() {
   return { properties: properties.filter((property) => property.active !== false), loading }
 }
 
+function useGallery() {
+  const [galleryImages, setGalleryImages] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const response = await fetch(`${API_URL}/api/gallery`)
+        if (response.ok) {
+          const data = await response.json()
+          setGalleryImages(Array.isArray(data) ? data : [])
+        }
+      } catch (error) {
+        console.warn('Galería general no disponible.', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  return { galleryImages, loading }
+}
+
 function PageHero({ eyebrow, title, text, children }) {
   return (
     <section className="page-hero">
@@ -489,18 +514,15 @@ function PropertiesPage() {
 }
 
 function GalleryPage() {
-  const { properties, loading } = useProperties()
-  const images = properties.flatMap((property) =>
-    (property.images || []).map((image, index) => ({ property, image, index }))
-  )
+  const { galleryImages, loading } = useGallery()
 
   return (
     <Shell>
       <main>
         <PageHero
           eyebrow="Galería"
-          title="Fotos de las propiedades."
-          text="Explorá imágenes de los departamentos y conocé mejor los espacios antes de consultar tu estadía."
+          title="Galería de ApartRincón."
+          text="Explorá imágenes de los departamentos, el entorno y los espacios pensados para disfrutar la estadía."
         />
 
         <section className="section gallery-section">
@@ -509,18 +531,18 @@ function GalleryPage() {
               <Loader2 className="spin" />
               Cargando galería...
             </div>
-          ) : images.length === 0 ? (
+          ) : galleryImages.length === 0 ? (
             <div className="empty-gallery">
               <Camera size={46} />
               <h2>Fotos próximamente</h2>
-              <p>Pronto vas a encontrar imágenes de los departamentos para conocer mejor cada espacio.</p>
+              <p>Pronto vas a encontrar imágenes de los departamentos, el entorno y los espacios de ApartRincón.</p>
             </div>
           ) : (
             <div className="gallery-grid">
-              {images.map(({ property, image, index }) => (
-                <article className="gallery-item" key={`${property.id}-${image}-${index}`}>
-                  <img src={resolveImageUrl(image)} alt={`${property.name} foto ${index + 1}`} />
-                  <span>{property.name}</span>
+              {galleryImages.map((item, index) => (
+                <article className="gallery-item" key={item.id || `${item.image_url}-${index}`}>
+                  <img src={resolveImageUrl(item.image_url)} alt={item.title || `ApartRincón foto ${index + 1}`} />
+                  <span>{item.title || 'ApartRincón'}</span>
                 </article>
               ))}
             </div>
@@ -804,6 +826,7 @@ function AdminApp() {
   const [loginData, setLoginData] = useState({ username: 'admin@apartrincon.com', password: '' })
   const [properties, setProperties] = useState([])
   const [bookings, setBookings] = useState([])
+  const [galleryImages, setGalleryImages] = useState([])
   const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
   const [selectedCalendarProperty, setSelectedCalendarProperty] = useState('')
@@ -864,12 +887,14 @@ function AdminApp() {
     if (!token) return
 
     try {
-      const [propertyData, bookingData] = await Promise.all([
+      const [propertyData, bookingData, galleryData] = await Promise.all([
         adminFetch('/api/admin/properties'),
-        adminFetch('/api/admin/bookings')
+        adminFetch('/api/admin/bookings'),
+        adminFetch('/api/admin/gallery')
       ])
       setProperties(propertyData)
       setBookings(bookingData)
+      setGalleryImages(galleryData)
       if (!bookingForm.property_id && propertyData[0]) {
         setBookingForm((current) => ({ ...current, property_id: propertyData[0].id }))
       }
@@ -932,7 +957,52 @@ function AdminApp() {
 
       const updated = await response.json()
       setProperties((current) => current.map((item) => (item.id === updated.id ? updated : item)))
-      setMessage('Imagen cargada.')
+      setMessage('Imagen cargada en la propiedad.')
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function uploadGalleryImage(file) {
+    if (!file) return
+    setSaving(true)
+    setMessage('')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch(`${API_URL}/api/admin/gallery/images`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Error subiendo imagen a galería' }))
+        throw new Error(error.detail || 'Error subiendo imagen a galería')
+      }
+
+      await loadAdminData()
+      setMessage('Imagen cargada en la galería general.')
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function deleteGalleryImage(id) {
+    if (!confirm('¿Eliminar esta imagen de la galería general?')) return
+    setSaving(true)
+    setMessage('')
+
+    try {
+      await adminFetch(`/api/admin/gallery/${id}`, { method: 'DELETE' })
+      await loadAdminData()
+      setMessage('Imagen eliminada de la galería general.')
     } catch (error) {
       setMessage(error.message)
     } finally {
@@ -1054,6 +1124,7 @@ function AdminApp() {
     setToken('')
     setProperties([])
     setBookings([])
+    setGalleryImages([])
     setEditingBooking(null)
   }
 
@@ -1292,7 +1363,41 @@ function AdminApp() {
         </section>
 
         <section className="admin-section">
-          <h3>Editar propiedades y galería</h3>
+          <div className="admin-section-header">
+            <div>
+              <h3>Galería general</h3>
+              <p className="admin-help">
+                Usa esta sección para fotos del entorno, exteriores, alrededores o imágenes generales que no pertenecen a una propiedad específica.
+              </p>
+            </div>
+            <label className="upload-label admin-upload-inline">
+              <ImagePlus size={18} />
+              Subir foto a galería general
+              <input type="file" accept="image/*" onChange={(event) => uploadGalleryImage(event.target.files?.[0])} />
+            </label>
+          </div>
+
+          {galleryImages.length === 0 ? (
+            <p className="admin-help">Todavía no hay fotos en la galería general.</p>
+          ) : (
+            <div className="admin-image-grid">
+              {galleryImages.map((item) => (
+                <div className="admin-image-item" key={item.id}>
+                  <img src={resolveImageUrl(item.image_url)} alt="Foto de galería general" />
+                  <button type="button" onClick={() => deleteGalleryImage(item.id)} aria-label="Quitar imagen de galería">
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="admin-section">
+          <h3>Editar propiedades</h3>
+          <p className="admin-help">
+            Usa esta sección solo para las fotos y datos propios de cada departamento. La primera imagen cargada en una propiedad se usa como foto principal de su tarjeta.
+          </p>
           <div className="property-editor-grid">
             {properties.map((property) => (
               <PropertyEditor
@@ -1598,7 +1703,7 @@ function PropertyEditor({ property, onChange, onSave, onUpload }) {
       </label>
 
       <label>
-        Imágenes por URL, separadas por coma
+        Fotos de esta propiedad por URL, separadas por coma
         <input
           value={listToString(property.images)}
           onChange={(event) => onChange({ ...property, images: event.target.value })}
@@ -1608,7 +1713,7 @@ function PropertyEditor({ property, onChange, onSave, onUpload }) {
 
       <label className="upload-label">
         <ImagePlus size={18} />
-        Subir foto a la galería
+        Subir foto a esta propiedad
         <input type="file" accept="image/*" onChange={(event) => onUpload(event.target.files?.[0])} />
       </label>
 

@@ -69,6 +69,14 @@ class PropertyBase(BaseModel):
     active: bool = True
 
 
+class GalleryImageBase(BaseModel):
+    id: str
+    image_url: str
+    title: str = ""
+    category: str = "general"
+    created_at: str = ""
+
+
 class BookingBase(BaseModel):
     property_id: str
     start_date: str
@@ -194,6 +202,18 @@ def init_db() -> None:
             """
         )
 
+        db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS gallery_images (
+                id TEXT PRIMARY KEY,
+                image_url TEXT NOT NULL,
+                title TEXT DEFAULT '',
+                category TEXT DEFAULT 'general',
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
         count = db.execute("SELECT COUNT(*) AS total FROM properties").fetchone()["total"]
         if count == 0:
             now = datetime.utcnow().isoformat()
@@ -283,6 +303,72 @@ def list_admin_properties() -> list[dict[str, Any]]:
     with get_db() as db:
         rows = db.execute("SELECT * FROM properties ORDER BY created_at ASC").fetchall()
     return [row_to_dict(row) for row in rows]
+
+
+@app.get("/api/gallery")
+def list_public_gallery() -> list[dict[str, Any]]:
+    with get_db() as db:
+        rows = db.execute("SELECT * FROM gallery_images ORDER BY created_at DESC").fetchall()
+    return [dict(row) for row in rows]
+
+
+@app.get("/api/admin/gallery", dependencies=[Depends(require_admin)])
+def list_admin_gallery() -> list[dict[str, Any]]:
+    with get_db() as db:
+        rows = db.execute("SELECT * FROM gallery_images ORDER BY created_at DESC").fetchall()
+    return [dict(row) for row in rows]
+
+
+@app.post("/api/admin/gallery/images", dependencies=[Depends(require_admin)])
+def upload_gallery_image(file: UploadFile = File(...)) -> dict[str, Any]:
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Solo se permiten archivos de imagen")
+
+    suffix = Path(file.filename or "image").suffix.lower() or ".jpg"
+    if suffix not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+        raise HTTPException(status_code=400, detail="Formato no permitido. Usa JPG, PNG, WEBP o GIF")
+
+    image_id = str(uuid.uuid4())
+    filename = f"gallery-{uuid.uuid4().hex}{suffix}"
+    destination = UPLOAD_DIR / filename
+
+    with destination.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    now = datetime.utcnow().isoformat()
+    image_url = f"/uploads/{filename}"
+
+    with get_db() as db:
+        db.execute(
+            """
+            INSERT INTO gallery_images (id, image_url, title, category, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (image_id, image_url, "", "general", now),
+        )
+        db.commit()
+        row = db.execute("SELECT * FROM gallery_images WHERE id = ?", (image_id,)).fetchone()
+
+    return dict(row)
+
+
+@app.delete("/api/admin/gallery/{image_id}", dependencies=[Depends(require_admin)])
+def delete_gallery_image(image_id: str) -> dict[str, str]:
+    with get_db() as db:
+        row = db.execute("SELECT * FROM gallery_images WHERE id = ?", (image_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Imagen no encontrada")
+
+        image_url = row["image_url"] or ""
+        if image_url.startswith("/uploads/"):
+            image_path = UPLOAD_DIR / image_url.replace("/uploads/", "", 1)
+            if image_path.exists():
+                image_path.unlink()
+
+        db.execute("DELETE FROM gallery_images WHERE id = ?", (image_id,))
+        db.commit()
+
+    return {"status": "deleted"}
 
 
 @app.get("/api/properties/{property_id}")

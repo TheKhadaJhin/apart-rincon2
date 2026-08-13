@@ -142,13 +142,10 @@ img {
 .hero-content h1,
 .page-hero h1 {
   margin: 0;
-  font-size: clamp(2.1rem, 4.2vw, 4rem);
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-  max-width: 760px;
-}
-.hero-content h1 {
-  max-width: 720px;
+  font-size: clamp(2.4rem, 6vw, 5.6rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  max-width: 850px;
 }
 
 .hero-text,
@@ -1214,8 +1211,7 @@ select:focus {
 
   .hero-content h1,
   .page-hero h1 {
-    font-size: clamp(2rem, 10vw, 3rem);
-    line-height: 1.08;
+    font-size: clamp(2.35rem, 14vw, 4rem);
   }
 
   .comfort-grid,
@@ -1995,4 +1991,16 @@ p,
   .booking-edit-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* Galería general separada */
+.admin-upload-inline {
+  width: min(320px, 100%);
+  margin-left: auto;
+  padding-inline: 1rem;
+}
+
+.admin-section .admin-image-grid {
+  margin-top: 1rem;
 }
