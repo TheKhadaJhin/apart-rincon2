@@ -36,6 +36,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         FRONTEND_URL,
+        "https://www.apartrinconcba.com",
+        "https://apartrinconcba.com",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
