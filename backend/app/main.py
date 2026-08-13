@@ -26,10 +26,16 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 BOOKING_STATUSES = {"reserved", "blocked", "pending", "completed", "cancelled"}
 CONFLICTING_BOOKING_STATUSES = {"reserved", "blocked"}
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+is_production = ENVIRONMENT == "production"
+
 app = FastAPI(
     title="ApartRincón API",
     description="API base para propiedades, galería y agenda privada de ApartRincón.",
     version="0.3.1",
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
 )
 
 app.add_middleware(
