@@ -2092,3 +2092,88 @@ p,
     bottom: 0.75rem;
   }
 }
+
+/* =========================================================
+   Ajuste de peso tipográfico
+   - Baja títulos y textos marcados de Cinzel 900/800 a un peso normal
+   - Mantiene la estética elegante sin verse tan gruesa
+   ========================================================= */
+
+body {
+  font-weight: 400 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.hero-content h1,
+.page-hero h1,
+.section-heading h2,
+.section h2,
+.admin-header h2,
+.admin-login-card h1,
+.admin-sidebar h1,
+.property-card h3,
+.comfort-card h3,
+.review-card h3,
+.brand span,
+.eyebrow,
+.button,
+.nav a,
+.capacity,
+.tags span,
+.rating-pill,
+.text-link,
+.location-items a,
+.back-link,
+.admin-sidebar a,
+.saving-label,
+.upload-label,
+.filter-button,
+.status-badge,
+.calendar-day span,
+.hero-metrics strong,
+.hero-brand-info p,
+.hero-brand-info span {
+  font-weight: 500 !important;
+}
+
+.hero-content h1,
+.page-hero h1 {
+  letter-spacing: -0.025em !important;
+  line-height: 1.08 !important;
+}
+
+.section-heading h2,
+.section h2,
+.admin-header h2,
+.admin-login-card h1 {
+  letter-spacing: -0.02em !important;
+  line-height: 1.08 !important;
+}
+
+.eyebrow {
+  letter-spacing: 0.16em !important;
+}
+
+.button,
+.nav a,
+.tags span,
+.capacity,
+.rating-pill,
+.status-badge,
+.filter-button {
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.hero-brand-info p {
+  letter-spacing: 0.06em !important;
+}
+
+.hero-brand-info span {
+  letter-spacing: 0.12em !important;
+}
